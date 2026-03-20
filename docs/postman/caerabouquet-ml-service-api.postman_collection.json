@@ -1,0 +1,111 @@
+{
+	"info": {
+		"_postman_id": "ac87b78b-3650-475f-94a6-5a343eec9636",
+		"name": "CaeraBouquet ML Service API",
+		"description": "Collection ini digunakan untuk pengujian endpoint Machine Learning Recommendation API pada layanan CaeraBouquet, termasuk health check, rekomendasi berbasis produk, dan rekomendasi berbasis kategori acara.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "ML Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL}}/health/",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"health",
+						""
+					]
+				},
+				"description": "Mengecek kesiapan service ML dan memastikan artifacts model sudah termuat."
+			},
+			"response": []
+		},
+		{
+			"name": "Product-Based Recommendation",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL}}/api/recommendations/product/B004/?top_n=5",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"api",
+						"recommendations",
+						"product",
+						"B004",
+						""
+					],
+					"query": [
+						{
+							"key": "top_n",
+							"value": "5"
+						}
+					]
+				},
+				"description": "Mengambil daftar rekomendasi produk yang mirip berdasarkan `product_id`."
+			},
+			"response": []
+		},
+		{
+			"name": "Event-Based Recommendation",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL}}/api/recommendations/event/birthday/?top_n=5",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"api",
+						"recommendations",
+						"event",
+						"birthday",
+						""
+					],
+					"query": [
+						{
+							"key": "top_n",
+							"value": "5"
+						}
+					]
+				},
+				"description": "Mengambil daftar rekomendasi produk berdasarkan kategori acara (`event_type`)."
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "BASE_URL",
+			"value": "http://127.0.0.1:8000"
+		}
+	]
+}
