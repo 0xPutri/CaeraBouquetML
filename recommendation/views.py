@@ -8,6 +8,12 @@ from .apps import RecommendationConfig
 logger = logging.getLogger(__name__)
 
 
+def _sanitize_for_log(value, max_len: int = 100) -> str:
+    """Membersihkan nilai untuk logging agar aman dari injeksi baris log."""
+    sanitized = str(value).replace('\n', ' ').replace('\r', ' ').strip()
+    return sanitized[:max_len]
+
+
 def _resolve_top_n(request, default: int = 5, minimum: int = 1, maximum: int = 20):
     """
     Memvalidasi parameter top_n dari query endpoint rekomendasi.
@@ -105,13 +111,16 @@ class ProductRecommendationView(APIView):
         Returns:
             Response: Respons rekomendasi produk atau pesan error.
         """
+        safe_product_id = _sanitize_for_log(product_id)
+        safe_top_n_raw = _sanitize_for_log(request.query_params.get('top_n'))
+        safe_client_ip = _sanitize_for_log(request.META.get('REMOTE_ADDR'))
         top_n, error = _resolve_top_n(request)
         if error:
             logger.warning(
                 "Input top_n tidak valid pada endpoint produk. product_id=%s, top_n_raw=%s, client_ip=%s",
-                product_id,
-                request.query_params.get('top_n'),
-                request.META.get('REMOTE_ADDR'),
+                safe_product_id,
+                safe_top_n_raw,
+                safe_client_ip,
             )
             return Response(
                 {"status": "error", "message": error},
@@ -124,10 +133,11 @@ class ProductRecommendationView(APIView):
             log_msg = (
                 "Gagal memproses rekomendasi produk. product_id=%s, top_n=%s, status=%s, message=%s"
             )
+            safe_error_message = _sanitize_for_log(result["error"], max_len=200)
             if result["status"] >= 500:
-                logger.error(log_msg, product_id, top_n, result["status"], result["error"])
+                logger.error(log_msg, safe_product_id, top_n, result["status"], safe_error_message)
             else:
-                logger.warning(log_msg, product_id, top_n, result["status"], result["error"])
+                logger.warning(log_msg, safe_product_id, top_n, result["status"], safe_error_message)
             return Response(
                 {"status": "error", "message": result["error"]}, 
                 status=result["status"]
@@ -135,7 +145,7 @@ class ProductRecommendationView(APIView):
 
         logger.info(
             "Endpoint rekomendasi produk sukses. product_id=%s, top_n=%s, result_count=%s",
-            product_id,
+            safe_product_id,
             top_n,
             len(result["data"]),
         )
@@ -163,13 +173,16 @@ class EventRecommendationView(APIView):
         Returns:
             Response: Respons rekomendasi event atau pesan error.
         """
+        safe_event_type = _sanitize_for_log(event_type)
+        safe_top_n_raw = _sanitize_for_log(request.query_params.get('top_n'))
+        safe_client_ip = _sanitize_for_log(request.META.get('REMOTE_ADDR'))
         top_n, error = _resolve_top_n(request)
         if error:
             logger.warning(
                 "Input top_n tidak valid pada endpoint event. event_type=%s, top_n_raw=%s, client_ip=%s",
-                event_type,
-                request.query_params.get('top_n'),
-                request.META.get('REMOTE_ADDR'),
+                safe_event_type,
+                safe_top_n_raw,
+                safe_client_ip,
             )
             return Response(
                 {"status": "error", "message": error},
@@ -182,10 +195,11 @@ class EventRecommendationView(APIView):
             log_msg = (
                 "Gagal memproses rekomendasi event. event_type=%s, top_n=%s, status=%s, message=%s"
             )
+            safe_error_message = _sanitize_for_log(result["error"], max_len=200)
             if result["status"] >= 500:
-                logger.error(log_msg, event_type, top_n, result["status"], result["error"])
+                logger.error(log_msg, safe_event_type, top_n, result["status"], safe_error_message)
             else:
-                logger.warning(log_msg, event_type, top_n, result["status"], result["error"])
+                logger.warning(log_msg, safe_event_type, top_n, result["status"], safe_error_message)
             return Response(
                 {"status": "error", "message": result["error"]}, 
                 status=result["status"]
@@ -193,7 +207,7 @@ class EventRecommendationView(APIView):
         
         logger.info(
             "Endpoint rekomendasi event sukses. event_type=%s, top_n=%s, result_count=%s",
-            event_type,
+            safe_event_type,
             top_n,
             len(result["data"]),
         )

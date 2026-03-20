@@ -4,6 +4,13 @@ from .apps import RecommendationConfig
 
 logger = logging.getLogger(__name__)
 
+
+def _sanitize_for_log(value: str, max_len: int = 100) -> str:
+    """Membersihkan nilai untuk logging agar aman dari injeksi baris log."""
+    sanitized = str(value).replace('\n', ' ').replace('\r', ' ').strip()
+    return sanitized[:max_len]
+
+
 class RecommendationService:
     """
     Menyediakan layanan inti untuk rekomendasi produk bouquet.
@@ -27,6 +34,7 @@ class RecommendationService:
         Returns:
             dict: Hasil rekomendasi atau pesan error beserta status HTTP.
         """
+        safe_product_id = _sanitize_for_log(product_id)
         try:
             df = RecommendationConfig.df_products
             sim_matrix = RecommendationConfig.sim_matrix
@@ -39,7 +47,7 @@ class RecommendationService:
                 }
             
             if product_id not in df['product_id'].values:
-                logger.warning("Produk tidak ditemukan untuk rekomendasi. product_id=%s", product_id)
+                logger.warning("Produk tidak ditemukan untuk rekomendasi. product_id=%s", safe_product_id)
                 return {
                     "error": f"Produk dengan ID '{product_id}' tidak ditemukan.",
                     "status": 404
@@ -57,7 +65,7 @@ class RecommendationService:
             result_df['similarity_score'] = np.round(scores, 2)
             logger.info(
                 "Rekomendasi produk berhasil dibuat. product_id=%s, top_n=%s, result_count=%s",
-                product_id,
+                safe_product_id,
                 top_n,
                 len(result_df),
             )
@@ -68,7 +76,7 @@ class RecommendationService:
         except Exception:
             logger.exception(
                 "Terjadi kegagalan internal saat memproses rekomendasi produk. product_id=%s, top_n=%s",
-                product_id,
+                safe_product_id,
                 top_n,
             )
             return {
@@ -91,6 +99,7 @@ class RecommendationService:
         Returns:
             dict: Hasil rekomendasi atau pesan error beserta status HTTP.
         """
+        safe_event_type = _sanitize_for_log(event_type)
         try:
             df = RecommendationConfig.df_products
 
@@ -104,7 +113,7 @@ class RecommendationService:
             filtered_df = df[df['event_type'].str.lower() == event_type.lower()].copy()
 
             if filtered_df.empty:
-                logger.warning("Event tidak ditemukan untuk rekomendasi. event_type=%s", event_type)
+                logger.warning("Event tidak ditemukan untuk rekomendasi. event_type=%s", safe_event_type)
                 return {
                    "error": f"Tidak ditemukan produk untuk acara '{event_type}'.",
                    "status": 404 
@@ -113,7 +122,7 @@ class RecommendationService:
             result_df = filtered_df.head(top_n)[['product_id', 'product_type', 'event_type', 'price', 'tags']]
             logger.info(
                 "Rekomendasi event berhasil dibuat. event_type=%s, top_n=%s, result_count=%s",
-                event_type,
+                safe_event_type,
                 top_n,
                 len(result_df),
             )
@@ -124,7 +133,7 @@ class RecommendationService:
         except Exception:
             logger.exception(
                 "Terjadi kegagalan internal saat memproses rekomendasi event. event_type=%s, top_n=%s",
-                event_type,
+                safe_event_type,
                 top_n,
             )
             return {
