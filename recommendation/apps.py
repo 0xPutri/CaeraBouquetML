@@ -8,6 +8,13 @@ import logging
 logger = logging.getLogger(__name__)
 
 class RecommendationConfig(AppConfig):
+    """
+    Menyiapkan konfigurasi awal untuk modul rekomendasi bouquet.
+
+    Kelas ini memegang artifacts ML di memori agar endpoint dapat
+    merespons rekomendasi produk secara cepat dan stabil.
+    """
+
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'recommendation'
 
@@ -16,6 +23,18 @@ class RecommendationConfig(AppConfig):
     artifacts_loaded = False
 
     def ready(self):
+        """
+        Memuat artifacts model rekomendasi saat aplikasi mulai berjalan.
+
+        Proses ini membaca matriks cosine similarity dan data referensi
+        produk bouquet dari folder artifacts.
+
+        Returns:
+            None: Tidak mengembalikan nilai.
+
+        Raises:
+            Exception: Dicatat ke log jika proses pemuatan gagal.
+        """
         if type(self).artifacts_loaded:
             logger.debug("Inisialisasi artifacts dilewati karena sudah dimuat sebelumnya.")
             return

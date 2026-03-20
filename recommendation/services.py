@@ -5,9 +5,28 @@ from .apps import RecommendationConfig
 logger = logging.getLogger(__name__)
 
 class RecommendationService:
+    """
+    Menyediakan layanan inti untuk rekomendasi produk bouquet.
+
+    Layanan ini menjalankan inferensi berbasis kemiripan konten
+    menggunakan artifacts yang telah dimuat ke memori.
+    """
 
     @staticmethod
     def get_by_product(product_id: str, top_n: int = 5) -> dict:
+        """
+        Menghasilkan rekomendasi produk yang mirip dengan produk acuan.
+
+        Perhitungan memakai skor cosine similarity dari matriks model,
+        lalu mengembalikan sejumlah produk teratas.
+
+        Args:
+            product_id (str): ID produk bouquet yang dijadikan acuan.
+            top_n (int): Jumlah rekomendasi yang ingin diambil.
+
+        Returns:
+            dict: Hasil rekomendasi atau pesan error beserta status HTTP.
+        """
         try:
             df = RecommendationConfig.df_products
             sim_matrix = RecommendationConfig.sim_matrix
@@ -59,6 +78,19 @@ class RecommendationService:
     
     @staticmethod
     def get_by_event(event_type: str, top_n: int = 5) -> dict:
+        """
+        Menghasilkan rekomendasi produk berdasarkan kategori acara.
+
+        Fungsi ini menyaring produk dengan event_type yang sesuai,
+        lalu mengambil sejumlah data teratas sebagai rekomendasi.
+
+        Args:
+            event_type (str): Kategori acara, seperti graduation atau wedding.
+            top_n (int): Jumlah rekomendasi yang ingin diambil.
+
+        Returns:
+            dict: Hasil rekomendasi atau pesan error beserta status HTTP.
+        """
         try:
             df = RecommendationConfig.df_products
 

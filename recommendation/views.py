@@ -9,6 +9,21 @@ logger = logging.getLogger(__name__)
 
 
 def _resolve_top_n(request, default: int = 5, minimum: int = 1, maximum: int = 20):
+    """
+    Memvalidasi parameter top_n dari query endpoint rekomendasi.
+
+    Fungsi ini menjaga agar jumlah rekomendasi tetap dalam rentang aman
+    sehingga layanan stabil saat menerima berbagai jenis input.
+
+    Args:
+        request (Request): Objek request yang membawa query parameter.
+        default (int): Nilai bawaan saat top_n tidak dikirim.
+        minimum (int): Batas nilai minimum top_n.
+        maximum (int): Batas nilai maksimum top_n.
+
+    Returns:
+        tuple[int | None, str | None]: Nilai top_n valid atau pesan error.
+    """
     raw_top_n = request.query_params.get('top_n', default)
     try:
         value = int(raw_top_n)
@@ -22,7 +37,23 @@ def _resolve_top_n(request, default: int = 5, minimum: int = 1, maximum: int = 2
 
 
 class MLHealthCheckView(APIView):
+    """
+    Menyediakan endpoint health check untuk modul ML recommendation.
+
+    Endpoint ini membantu monitoring kesiapan artifacts sebelum
+    frontend meminta rekomendasi bouquet.
+    """
+
     def get(self, request):
+        """
+        Mengembalikan status kesiapan layanan machine learning.
+
+        Args:
+            request (Request): Objek request dari klien.
+
+        Returns:
+            Response: Respons sukses jika artifacts siap, selain itu error 503.
+        """
         is_ready = (
             RecommendationConfig.sim_matrix is not None and 
             RecommendationConfig.df_products is not None
@@ -56,7 +87,24 @@ class MLHealthCheckView(APIView):
         )
 
 class ProductRecommendationView(APIView):
+    """
+    Menangani permintaan rekomendasi berdasarkan produk acuan.
+
+    Endpoint ini dipakai saat pengguna melihat satu bouquet dan
+    membutuhkan daftar produk lain yang paling mirip.
+    """
+
     def get(self, request, product_id):
+        """
+        Memproses request rekomendasi produk berbasis similarity.
+
+        Args:
+            request (Request): Objek request yang memuat query top_n.
+            product_id (str): ID produk bouquet yang sedang dilihat pengguna.
+
+        Returns:
+            Response: Respons rekomendasi produk atau pesan error.
+        """
         top_n, error = _resolve_top_n(request)
         if error:
             logger.warning(
@@ -97,7 +145,24 @@ class ProductRecommendationView(APIView):
         )
 
 class EventRecommendationView(APIView):
+    """
+    Menangani permintaan rekomendasi berdasarkan kategori acara.
+
+    Endpoint ini membantu pengguna menemukan bouquet yang relevan
+    untuk momen seperti graduation, birthday, atau wedding.
+    """
+
     def get(self, request, event_type):
+        """
+        Memproses request rekomendasi produk berbasis event_type.
+
+        Args:
+            request (Request): Objek request yang memuat query top_n.
+            event_type (str): Jenis acara yang menjadi konteks rekomendasi.
+
+        Returns:
+            Response: Respons rekomendasi event atau pesan error.
+        """
         top_n, error = _resolve_top_n(request)
         if error:
             logger.warning(
