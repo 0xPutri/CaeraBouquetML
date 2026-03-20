@@ -1,0 +1,17 @@
+# AI Agent Context (private instructions)
+docs/context/ai/
+
+# Environments
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+
+# ML Artifacts
+ml_artifacts/
+
+# Django
+*.log
+db.sqlite3
+db.sqlite3-journal
