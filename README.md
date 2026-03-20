@@ -35,11 +35,26 @@ Sistem berfokus pada rekomendasi bouquet berbasis **Content-Based Filtering** de
 
 ## API Endpoint
 
-| Endpoint | Method | Parameter | Deskripsi Singkat | Respons Utama |
-|---|---|---|---|---|
-| `/health/` | `GET` | - | Memeriksa kesiapan artifacts model di memori. | `200` siap, `503` belum siap |
-| `/api/recommendations/product/<product_id>/` | `GET` | Query: `top_n` (opsional, default `5`, rentang `1-20`) | Rekomendasi produk paling mirip berdasarkan `product_id`. | `200` data rekomendasi, `404` produk tidak ditemukan, `500` error internal |
-| `/api/recommendations/event/<event_type>/` | `GET` | Query: `top_n` (opsional, default `5`, rentang `1-20`) | Rekomendasi produk berdasarkan kategori acara (`event_type`). | `200` data rekomendasi, `404` event tidak ditemukan, `500` error internal |
+### 1. ML Health Check
+
+- Method: `GET`
+- URL: `/health/`
+- Fungsi: mengecek kesiapan artifacts model di memori.
+- Status: `200` siap, `503` belum siap.
+
+### 2. Product-Based Recommendation
+
+- Method: `GET`
+- URL: `/api/recommendations/product/<product_id>/?top_n=5`
+- Fungsi: mengembalikan rekomendasi produk paling mirip berdasarkan `product_id`.
+- Status: `200` sukses, `404` produk tidak ditemukan, `500` error internal.
+
+### 3. Event-Based Recommendation
+
+- Method: `GET`
+- URL: `/api/recommendations/event/<event_type>/?top_n=5`
+- Fungsi: mengembalikan rekomendasi produk berdasarkan kategori acara (`event_type`).
+- Status: `200` sukses, `404` event tidak ditemukan, `500` error internal.
 
 ## Catatan
 
