@@ -1,5 +1,5 @@
 # AI Agent Context (private instructions)
-docs/context/ai/
+ai_context/**
 
 # Environments
 .env
